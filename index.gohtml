@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<TITLE>Steam Inviter - Expand and Profit</TITLE>
+	<META NAME="description" CONTENT="Automatic Steam inviting tool to expand your Steam groups. 2016">
+	<META NAME="keywords" CONTENT="Invite, Steam, Group, Mass">
+	<META NAME="robot" CONTENT="index,follow">
+	<META NAME="copyright" CONTENT="Copyright Â© 2016 Steam Inviter. All Rights Reserved.">
+	<META NAME="language" CONTENT="English">
+	<META NAME="revisit-after" CONTENT="1 days">
+
+	<link rel="stylesheet" type="text/css" href="/css/normalize.css">
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+	<link rel="icon" type="image/png" href="/images/favicon.png">
+
+	<!-- Google Fonts -->
+	<link href='https://fonts.googleapis.com/css?family=Lato:400,700,300' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Duru+Sans' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+<div class="header-container">
+	<div class="header-content">
+		<span id="logo"></span>
+		<ul id="main-menus">
+			<a href="/plans">
+				<li class="current">Plans</li>
+			</a>
+			<a href="/features">
+				<li>Features</li>
+			</a>
+			<a href="/contact">
+				<li>Contact</li>
+			</a>
+		</ul>
+
+		{{if .steamid}}
+		<span id="user-icon" style="background-image: url({{.avatarmedium}});"></span>
+		{{else}}
+		<span id="login">
+			<form action="/login" method="">
+				<input type="image" src="http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_large_border.png">
+			</form>
+		</span>
+		{{end}}
+	</div>
+</div>
+
+<div id="background">
+	<div id="container">
+		<h1 class="header">Plans</h1>
+		<h3 class="header sub">Expand your Steam group with our ezy plans.</h3>
+		<div class="box wide">
+			<div class="plan" id="toddler-plan">
+				<h2 class="header" style="margin-top: 12px;float: left;">Toddler Plan</h2>
+				<img class="icon" src="/images/toddler.png">
+				<div class="clear"></div>
+				<ul>
+					<li>Single link to invite specified Steam ID to group.</li>
+					<li>Ability to anonymize link.</li>
+				</ul>
+				<a href="{{if .steamid}}/purchase?plan=toddler{{else}}/login{{end}}">
+					<button class="purchase">$5/month</button>
+				</a>
+			</div>
+
+			<hr>
+
+			<div class="plan" id="man-plan">
+				<h2 class="header" style="margin-top: 12px;float: left;">Man Plan</h2>
+				<img class="icon" src="/images/man.png">
+				<div class="clear"></div>
+				<ul>
+					<li>Single link to invite specified Steam ID to group.</li>
+					<li>Automatically invite 200 random Steam users every day.</li>
+				</ul>
+				<a href="{{if .steamid}}/purchase?plan=man{{else}}/login{{end}}">
+					<button class="purchase">$18/month</button>
+				</a>
+			</div>
+
+			<hr>
+
+			<div class="plan" id="god-plan">
+				<h2 class="header" style="margin-top: 12px;float: left;">God Plan</h2>
+				<img class="icon" src="/images/god.png">
+				<div class="clear"></div>
+				<ul>
+					<li>Single link to invite specified Steam ID to group.</li>
+					<li>Single link to invite a <strong>group</strong> of specified Steam ID's to group.</li>
+					<li>Automatically invite 2000 random Steam users every day.</li>
+				</ul>
+				<a href="{{if .steamid}}/purchase?plan=god{{else}}/login{{end}}">
+					<button class="purchase" style="margin-bottom: 12px;">$30/month</button>
+				</a>
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>
+</div>
+
+<div class="header-container" style="background-color: rgba(0, 0, 0, 0.4);">
+	<div class="header-content" style="background: none; line-height: 104px;">
+		<span class="powered-by-steam" style="color: #fff;">Powered by Steam</span>
+	</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<!--<script src="http://code.acidichost.com/js/msgBox.js"></script>-->
+
+<script type="text/javascript">
+	jQuery(document).ready(function(){
+		// JavaScript Starts Here //
+
+	});
+</script>
+
+</body>
+</html>
