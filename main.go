@@ -78,7 +78,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if !session.IsNew {
-			parse["steamid"]		= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+			parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
 			parse["personaname"]	= session.Values["personaname"].(string)
 			parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
 		}

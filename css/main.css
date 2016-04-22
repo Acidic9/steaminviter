@@ -142,3 +142,12 @@ hr {
 	border-right: 0;
 	border-color: rgba(0, 0, 0, 0.8);
 }
+
+button, input[type=submit] {
+	color: white;
+	background-color: rgba(0, 0, 0, 0.6);
+	border: none;
+	padding: 6px 12px;
+	border: rgba(0, 0, 0, 0.9);
+	border-radius: 3px;
+}
