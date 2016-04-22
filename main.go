@@ -11,6 +11,8 @@ import (
 	"encoding/json"
 	"strconv"
 	"github.com/gorilla/sessions"
+	"gopkg.in/gomail.v2"
+	"crypto/tls"
 )
 
 const apikey string	= "2B2A0C37AC20B5DC2234E579A2ABB11C"
@@ -40,6 +42,8 @@ func main() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/purchase", purchaseHandler)
+	http.HandleFunc("/contact", contactHandler)
+	http.HandleFunc("/sendMessage", sendMessageHandler)
 
 	log.Println("Listening to :8080")
 	http.ListenAndServe(":8080", nil)
@@ -53,6 +57,32 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	p := make(map[string]string)
 	if t, err := template.ParseFiles("index.gohtml"); err == nil {
+		session, err := store.Get(r, "user")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if !session.IsNew {
+			p["steamid"]		= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+			p["personaname"]	= session.Values["personaname"].(string)
+			p["avatarmedium"]	= session.Values["avatarmedium"].(string)
+		}
+
+		t.Execute(w, p)
+	} else {
+		log.Print(err)
+	}
+}
+
+func contactHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/contact" {
+		errorHandler(w, r, http.StatusNotFound)
+		return
+	}
+
+	p := make(map[string]string)
+	if t, err := template.ParseFiles("contact.gohtml"); err == nil {
 		session, err := store.Get(r, "user")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -155,6 +185,28 @@ func purchaseHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/sendMessage" {
+		errorHandler(w, r, http.StatusNotFound)
+		return
+	}
+
+	log.SetPrefix("HEY!!!")
+
+	r.ParseForm()
+
+	name	:= r.FormValue("name")
+	email	:= r.FormValue("email")
+	message	:= r.FormValue("message")
+
+	if err := mailTo("ariseyhun9@gmail.com", "Contact - " + name, email + ": " + message); err != nil {
+		w.Write([]byte("ERR"))
+		log.Fatal(err)
+	} else {
+		w.Write([]byte("OK"))
+	}
+}
+
 func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
 	w.WriteHeader(status)
 	if status == http.StatusNotFound {
@@ -218,4 +270,23 @@ func getUserDetails(steamid int64) (*steamUser, error) {
 	}
 
 	return &user, nil
+}
+
+func mailTo(to, subject, message string) error {
+	m := gomail.NewMessage()
+	m.SetAddressHeader("From", "ariseyhun9@gmail.com", "Steam Inviter Contact")
+	m.SetAddressHeader("To", to, "Contact")
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", message)
+
+	d := gomail.NewPlainDialer("mail@steaminviter.com", 587, "mail", "GVY6yk./.")
+
+	d.SSL = false
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	if err := d.DialAndSend(m); err != nil {
+		return err
+	}
+
+	return nil
 }

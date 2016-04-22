@@ -2,12 +2,12 @@ body {
 	background-color: #1B2838;
 }
 
-body * {
+/*body * {
 	-webkit-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
 	-moz-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
 	-o-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
 	transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
-}
+}*/
 
 .clear {
 	clear: both;
@@ -152,6 +152,10 @@ body * {
 	margin: 12px 0;
 }
 
+.plan:hover > .icon {
+	opacity: 1;
+}
+
 .purchase {
 	color: white;
 	background-color: rgba(0, 0, 0, 0.6);
@@ -169,6 +173,7 @@ body * {
 	float: right;
 	margin-top: 6px;
 	margin-left: 12px;
+	opacity: 0.6;
 }
 
 hr {
