@@ -124,14 +124,6 @@ body {
 	width: calc(100% - 22px);
 }
 
-#plans-table {
-	width: 100%;
-}
-
-#plans-table td {
-	width: 25%;
-}
-
 .header {
 	color: #FFF;
 	font-weight: 100;
@@ -141,39 +133,6 @@ body {
 .sub {
 	margin-top: 0;
 	color: #9099a1;
-}
-
-.plan {
-	width: calc(100% - 40px);
-	padding: 2px 20px;
-}
-
-.plan li {
-	margin: 12px 0;
-}
-
-.plan:hover > .icon {
-	opacity: 1;
-}
-
-.purchase {
-	color: white;
-	background-color: rgba(0, 0, 0, 0.6);
-	border: none;
-	padding: 6px 12px;
-	border: rgba(0, 0, 0, 0.9);
-	border-radius: 3px;
-}
-
-.purchase:hover {
-	background-color: rgba(0, 0, 0, 0.8);
-}
-
-.icon {
-	float: right;
-	margin-top: 6px;
-	margin-left: 12px;
-	opacity: 0.6;
 }
 
 hr {

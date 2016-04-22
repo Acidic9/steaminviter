@@ -11,12 +11,10 @@ import (
 	"encoding/json"
 	"strconv"
 	"github.com/gorilla/sessions"
-	"gopkg.in/gomail.v2"
-	"crypto/tls"
 )
 
 const apikey string	= "2B2A0C37AC20B5DC2234E579A2ABB11C"
-var store = sessions.NewCookieStore([]byte("AriisAwesome9"))
+var store		= sessions.NewCookieStore([]byte("secured-cookies"))
 
 type steamUser struct {
 	steamid				int64
@@ -43,61 +41,117 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/purchase", purchaseHandler)
 	http.HandleFunc("/contact", contactHandler)
-	http.HandleFunc("/sendMessage", sendMessageHandler)
 
 	log.Println("Listening to :8080")
 	http.ListenAndServe(":8080", nil)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	// check if url is different than wanted
 	if r.URL.Path != "/" {
 		errorHandler(w, r, http.StatusNotFound)
 		return
 	}
 
-	p := make(map[string]string)
+	// define template variables
+	header	:= make(map[string][]string)
+	parse	:= make(map[string]string)
+	footer	:= make(map[string][]string)
+
+	// parse header.gohtml
+	if t, err := template.ParseFiles("header.gohtml"); err == nil {
+		header["css"] = []string{"/css/index.css"}
+		t.Execute(w, header)
+	} else {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	// parse index.gohtml
 	if t, err := template.ParseFiles("index.gohtml"); err == nil {
 		session, err := store.Get(r, "user")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
 			return
 		}
 
 		if !session.IsNew {
-			p["steamid"]		= strconv.FormatInt(session.Values["steamid"].(int64), 10)
-			p["personaname"]	= session.Values["personaname"].(string)
-			p["avatarmedium"]	= session.Values["avatarmedium"].(string)
+			parse["steamid"]		= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+			parse["personaname"]	= session.Values["personaname"].(string)
+			parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
 		}
 
-		t.Execute(w, p)
+		t.Execute(w, parse)
 	} else {
-		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	// parse footer.gohtml
+	if t, err := template.ParseFiles("footer.gohtml"); err == nil {
+		t.Execute(w, footer)
+	} else {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 }
 
 func contactHandler(w http.ResponseWriter, r *http.Request) {
+	// check if url is different than wanted
 	if r.URL.Path != "/contact" {
 		errorHandler(w, r, http.StatusNotFound)
 		return
 	}
 
-	p := make(map[string]string)
+	// define template variables
+	header	:= make(map[string][]string)
+	parse	:= make(map[string]string)
+	footer	:= make(map[string][]string)
+
+	// parse header.gohtml
+	if t, err := template.ParseFiles("header.gohtml"); err == nil {
+		header["css"] = []string{"/css/index.css"}
+		t.Execute(w, header)
+	} else {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	// parse contact.gohtml
 	if t, err := template.ParseFiles("contact.gohtml"); err == nil {
 		session, err := store.Get(r, "user")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
 			return
 		}
 
 		if !session.IsNew {
-			p["steamid"]		= strconv.FormatInt(session.Values["steamid"].(int64), 10)
-			p["personaname"]	= session.Values["personaname"].(string)
-			p["avatarmedium"]	= session.Values["avatarmedium"].(string)
+			parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+			parse["personaname"]	= session.Values["personaname"].(string)
+			parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
 		}
 
-		t.Execute(w, p)
+		t.Execute(w, parse)
 	} else {
-		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	// parse footer.gohtml
+	if t, err := template.ParseFiles("footer.gohtml"); err == nil {
+		header["js"] = []string{"/js/contact.js"}
+		t.Execute(w, footer)
+	} else {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
 	}
 }
 
@@ -117,6 +171,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		steamId, err := opId.ValidateAndGetId()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
+			return
 		}
 
 		id, _ := strconv.ParseInt(steamId, 10, 64)
@@ -130,6 +186,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		session, err := store.Get(r, "user")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
 			return
 		}
 
@@ -164,6 +221,7 @@ func purchaseHandler(w http.ResponseWriter, r *http.Request) {
 		session, err := store.Get(r, "user")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
 			return
 		}
 
@@ -182,28 +240,6 @@ func purchaseHandler(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, p)
 	} else {
 		log.Print(err)
-	}
-}
-
-func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/sendMessage" {
-		errorHandler(w, r, http.StatusNotFound)
-		return
-	}
-
-	log.SetPrefix("HEY!!!")
-
-	r.ParseForm()
-
-	name	:= r.FormValue("name")
-	email	:= r.FormValue("email")
-	message	:= r.FormValue("message")
-
-	if err := mailTo("ariseyhun9@gmail.com", "Contact - " + name, email + ": " + message); err != nil {
-		w.Write([]byte("ERR"))
-		log.Fatal(err)
-	} else {
-		w.Write([]byte("OK"))
 	}
 }
 
@@ -270,23 +306,4 @@ func getUserDetails(steamid int64) (*steamUser, error) {
 	}
 
 	return &user, nil
-}
-
-func mailTo(to, subject, message string) error {
-	m := gomail.NewMessage()
-	m.SetAddressHeader("From", "ariseyhun9@gmail.com", "Steam Inviter Contact")
-	m.SetAddressHeader("To", to, "Contact")
-	m.SetHeader("Subject", subject)
-	m.SetBody("text/plain", message)
-
-	d := gomail.NewPlainDialer("mail@steaminviter.com", 587, "mail", "GVY6yk./.")
-
-	d.SSL = false
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	if err := d.DialAndSend(m); err != nil {
-		return err
-	}
-
-	return nil
 }

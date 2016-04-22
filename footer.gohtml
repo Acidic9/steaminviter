@@ -1,0 +1,37 @@
+</div>
+</div>
+
+<div class="header-container" style="background-color: rgba(0, 0, 0, 0.4);">
+	<div class="header-content" style="background: none; line-height: 104px;">
+		<span class="powered-by-steam" style="color: #fff;">Powered by Steam</span>
+	</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript">
+	jQuery(document).ready(function(){
+		// JavaScript Starts Here //
+		var containerHeight = $("#container").height()
+		adjustFooter();
+		$(window).resize(function () {
+			adjustFooter();
+		});
+		function adjustFooter() {
+			var docHeight = $(window).height();
+			var headerAndFooterHeight = 0;
+			$(".header-container").each(function(){
+				headerAndFooterHeight += $(this).height();
+			});
+			var adjustHeight = docHeight - (headerAndFooterHeight + 24)
+			if (adjustHeight > containerHeight) {
+				$("#background").height(adjustHeight + "px")
+			}
+		}
+	});
+</script>
+{{range .js}}
+<script src="{{.}}"></script>
+{{end}}
+
+</body>
+</html>

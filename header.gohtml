@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<TITLE>Steam Inviter{{if .title}} - {{.title}} {{end}}</TITLE>
+	<META NAME="description" CONTENT="Automatic Steam inviting tool to expand your Steam groups. 2016">
+	<META NAME="keywords" CONTENT="Invite, Steam, Group, Mass">
+	<META NAME="robot" CONTENT="index,follow">
+	<META NAME="copyright" CONTENT="Copyright Â© 2016 Steam Inviter. All Rights Reserved.">
+	<META NAME="language" CONTENT="English">
+	<META NAME="revisit-after" CONTENT="1 days">
+
+	<link rel="stylesheet" type="text/css" href="/css/normalize.css">
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+	<link rel="icon" type="image/png" href="/images/favicon.png">
+
+	{{range .css}}
+	<link rel="stylesheet" type="text/css" href="{{.}}">
+	{{end}}
+
+	<!-- Google Fonts -->
+	<link href='https://fonts.googleapis.com/css?family=Lato:400,700,300' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Duru+Sans' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+<div class="header-container">
+	<div class="header-content">
+		<span id="logo"></span>
+		<ul id="main-menus">
+			<a href="/plans">
+				<li class="current">Plans</li>
+			</a>
+			<a href="/features">
+				<li>Features</li>
+			</a>
+			<a href="/contact">
+				<li>Contact</li>
+			</a>
+		</ul>
+
+		{{if .steamid}}
+		<span id="user-icon" style="background-image: url({{.avatarmedium}});"></span>
+		{{else}}
+		<span id="login">
+			<form action="/login" method="">
+				<input type="image" src="http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_large_border.png">
+			</form>
+		</span>
+		{{end}}
+	</div>
+</div>
+
+<div id="background">
+	<div id="container">
