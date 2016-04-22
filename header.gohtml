@@ -30,13 +30,13 @@
 		</a>
 		<ul id="main-menus">
 			<a href="/">
-				<li class="current">Plans</li>
+				<li{{if eq .urlPath "/"}} class="active-page"{{end}}>Plans</li>
 			</a>
 			<a href="/features">
-				<li>Features</li>
+				<li{{if eq .urlPath "/features"}} class="active-page"{{end}}>Features</li>
 			</a>
 			<a href="/contact">
-				<li>Contact</li>
+				<li{{if eq .urlPath "/contact"}} class="active-page"{{end}}>Contact</li>
 			</a>
 		</ul>
 

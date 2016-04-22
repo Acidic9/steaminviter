@@ -54,14 +54,28 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// define template variables
-	header	:= make(map[string][]string)
-	parse	:= make(map[string]string)
-	footer	:= make(map[string][]string)
+	parse := make(map[string]interface{})
+
+	// collect session variables
+	session, err := store.Get(r, "user")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	// parse user variables to template
+	if !session.IsNew {
+		parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+		parse["personaname"]	= session.Values["personaname"].(string)
+		parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
+	}
 
 	// parse header.gohtml
 	if t, err := template.ParseFiles("header.gohtml"); err == nil {
-		header["css"] = []string{"/css/index.css"}
-		t.Execute(w, header)
+		parse["urlPath"]	= r.URL.Path
+		parse["css"]		= []string{"/css/index.css"}
+		t.Execute(w, parse)
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -70,19 +84,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	// parse index.gohtml
 	if t, err := template.ParseFiles("index.gohtml"); err == nil {
-		session, err := store.Get(r, "user")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Println(err)
-			return
-		}
-
-		if !session.IsNew {
-			parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
-			parse["personaname"]	= session.Values["personaname"].(string)
-			parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
-		}
-
 		t.Execute(w, parse)
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -92,7 +93,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	// parse footer.gohtml
 	if t, err := template.ParseFiles("footer.gohtml"); err == nil {
-		t.Execute(w, footer)
+		t.Execute(w, parse)
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -108,14 +109,28 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// define template variables
-	header	:= make(map[string][]string)
-	parse	:= make(map[string]string)
-	footer	:= make(map[string][]string)
+	parse := make(map[string]interface{})
+
+	// collect session variables
+	session, err := store.Get(r, "user")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	// parse user variables to template
+	if !session.IsNew {
+		parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+		parse["personaname"]	= session.Values["personaname"].(string)
+		parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
+	}
 
 	// parse header.gohtml
 	if t, err := template.ParseFiles("header.gohtml"); err == nil {
-		header["css"] = []string{"/css/index.css"}
-		t.Execute(w, header)
+		parse["urlPath"]	= r.URL.Path
+		parse["css"]		= []string{"/css/index.css"}
+		t.Execute(w, parse)
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -146,8 +161,8 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 
 	// parse footer.gohtml
 	if t, err := template.ParseFiles("footer.gohtml"); err == nil {
-		header["js"] = []string{"/js/contact.js"}
-		t.Execute(w, footer)
+		parse["js"] = []string{"/js/contact.js"}
+		t.Execute(w, parse)
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
