@@ -15,7 +15,7 @@ import (
 	"log"
 )
 
-const baseid int64	= 76561198300238810			// Base ID MUST not be a private profile
+const baseid int64	= 76561198267374397			// Base ID MUST not be a private profile
 const apikey string	= "2B2A0C37AC20B5DC2234E579A2ABB11C"
 var errNum int
 
@@ -91,7 +91,7 @@ func main() {
 	go func(){
 		for {
 			duplicates = 0
-			for i := 0; i < 12; i++ {
+			for i := 0; i < 80; i++ {
 				ids, _ := getFriendsList(users[totalScanned])
 				for _, id := range ids {
 					if !existsInSlice(users, id) {
