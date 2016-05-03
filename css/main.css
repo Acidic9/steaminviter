@@ -151,3 +151,55 @@ button, input[type=submit] {
 	border: rgba(0, 0, 0, 0.9);
 	border-radius: 3px;
 }
+
+#container input, #container textarea {
+	line-height: normal;
+	background: rgba(0, 0, 0, 0.4);
+	padding: 6px 12px;
+	border: 1px solid rgba(0, 0, 0, 0.4);
+	color: #fff;
+}
+
+textarea {
+	padding: 6px 8px;
+}
+
+#profile-drop-down {
+	width: auto;
+	position: absolute;
+	right: 20px;
+	background-color: rgba(0, 0, 0, 0.8);
+	top: 74px;
+	color: #dddddd;
+	border-radius: 6px;
+}
+
+#profile-drop-down ul {
+	margin: 0;
+	padding: 0;
+}
+
+#profile-drop-down li {
+	list-style: none;
+	padding: 8px 20px;
+	cursor: pointer;
+	background-color: rgba(0, 0, 0, 0);
+}
+
+#profile-drop-down a {
+	color: #dddddd;
+	text-decoration: none;
+}
+
+#profile-drop-down li:hover {
+	color: #fff;
+	background-color: rgba(0, 0, 0, 0.6);
+}
+
+#profile-drop-down li:first-child {
+	margin-top: 6px;
+}
+
+#profile-drop-down li:last-child {
+	margin-bottom: 6px;
+}

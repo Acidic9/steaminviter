@@ -28,11 +28,15 @@
 	background-color: rgba(0, 0, 0, 0.8);
 }
 
-.icon {
+.icon, .icon * {
 	float: right;
 	margin-top: 6px;
 	margin-left: 12px;
 	opacity: 0.6;
+	-webkit-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
+	-moz-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
+	-o-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
+	transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 #login *:focus {

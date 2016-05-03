@@ -1,13 +1,13 @@
 <h1 class="header">Contact Us</h1>
 <h3 class="header sub">Send us a message, we'd love to hear from you weather it'd be feedback or an inquiry.</h3>
 <div class="box wide">
-	<form name="contact" id="contactForm" method="post">
+	<form name="contact" id="contactForm" method="post" autocomplete="off">
 		<span style="float:left; margin-right: 20px;">
 			<label for="name">
 				Name
 			</label>
 			<br>
-			<input name="name" id="name" type="text" style="width: 300px;">
+			<input name="name" id="name" type="text" style="width: 300px;" spellcheck="false">
 		</span>
 
 		<span style="float: left;">
@@ -15,7 +15,7 @@
 				Email
 			</label>
 			<br>
-			<input name="email" id="email" type="text" style="text-transform: lowercase; width: 340px;">
+			<input name="email" id="email" type="text" style="text-transform: lowercase; width: 340px;" spellcheck="false">
 		</span>
 
 		<div class="clear"></div>
@@ -26,7 +26,7 @@
 			Message
 		</label>
 		<br>
-		<textarea name="message" id="message" style="min-width: calc(100% - 18px); max-width: calc(100% - 18px); min-height: 100px;"></textarea>
+		<textarea name="message" id="message" style="min-width: calc(100% - 18px); max-width: calc(100% - 18px); min-height: 100px;" spellcheck="true"></textarea>
 
 		<br>
 

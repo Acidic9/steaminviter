@@ -41,7 +41,20 @@
 		</ul>
 
 		{{if .steamid}}
-		<span id="user-icon" style="background-image: url({{.avatarmedium}});"></span>
+		<span id="user-icon" style="background-image: url({{.avatarmedium}});" onclick="if($('#profile-drop-down').css('display') == 'none') {$('#profile-drop-down').show();} else {$('#profile-drop-down').hide();};"></span>
+		<div id="profile-drop-down" style="display: none;">
+			<ul>
+				<a href="/myplans">
+					<li>My Plans</li>
+				</a>
+				<a href="/{{.steamid}}">
+					<li>Account</li>
+				</a>
+				<a href="/logout">
+					<li>Logout</li>
+				</a>
+			</ul>
+		</div>
 		{{else}}
 		<span id="login">
 			<form action="/login" method="">
