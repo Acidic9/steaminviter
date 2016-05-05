@@ -74,7 +74,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Define template variables
-	parse := make(map[string]interface{})
+	parse			:= make(map[string]interface{})
+	parse["steamid"]	= 0
 
 	// Collect session variables
 	session, err := store.Get(r, "user")
@@ -86,7 +87,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse user variables to template
 	if !session.IsNew {
-		parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+		parse["steamid"]	= session.Values["steamid"].(int64)
 		parse["personaname"]	= session.Values["personaname"].(string)
 		parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
 	}
@@ -95,7 +96,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if t, err := template.ParseFiles("header.gohtml"); err == nil {
 		parse["urlPath"]	= r.URL.Path
 		parse["css"]		= []string{"/css/index.css"}
-		t.Execute(w, parse)
+		if err := t.Execute(w, parse); err != nil {
+			log.Println(err)
+		}
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -104,7 +107,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse index.gohtml
 	if t, err := template.ParseFiles("index.gohtml"); err == nil {
-		t.Execute(w, parse)
+		if err := t.Execute(w, parse); err != nil {
+			log.Println(err)
+		}
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -113,7 +118,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse footer.gohtml
 	if t, err := template.ParseFiles("footer.gohtml"); err == nil {
-		t.Execute(w, parse)
+		if err := t.Execute(w, parse); err != nil {
+			log.Println(err)
+		}
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -129,7 +136,8 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Define template variables
-	parse := make(map[string]interface{})
+	parse			:= make(map[string]interface{})
+	parse["steamid"]	= 0
 
 	// Collect session variables
 	session, err := store.Get(r, "user")
@@ -141,7 +149,7 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse user variables to template
 	if !session.IsNew {
-		parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
+		parse["steamid"]	= session.Values["steamid"].(int64)
 		parse["personaname"]	= session.Values["personaname"].(string)
 		parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
 	}
@@ -150,7 +158,9 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 	if t, err := template.ParseFiles("header.gohtml"); err == nil {
 		parse["urlPath"]	= r.URL.Path
 		parse["css"]		= []string{"/css/index.css"}
-		t.Execute(w, parse)
+		if err := t.Execute(w, parse); err != nil {
+			log.Println(err)
+		}
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -159,20 +169,9 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse contact.gohtml
 	if t, err := template.ParseFiles("contact.gohtml"); err == nil {
-		session, err := store.Get(r, "user")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := t.Execute(w, parse); err != nil {
 			log.Println(err)
-			return
 		}
-
-		if !session.IsNew {
-			parse["steamid"]	= strconv.FormatInt(session.Values["steamid"].(int64), 10)
-			parse["personaname"]	= session.Values["personaname"].(string)
-			parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
-		}
-
-		t.Execute(w, parse)
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
@@ -182,7 +181,9 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse footer.gohtml
 	if t, err := template.ParseFiles("footer.gohtml"); err == nil {
 		parse["js"] = []string{"/js/contact.js"}
-		t.Execute(w, parse)
+		if err := t.Execute(w, parse); err != nil {
+			log.Println(err)
+		}
 	} else {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println(err)
