@@ -511,7 +511,7 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 	email	:= r.FormValue("email")
 	message	:= r.FormValue("message")
 
-	if err := mailTo("ariseyhun9@gmail.com", "Contact - " + name, "<h3>" + name + " - " + email + ":</h3><p>" + message + "</p>"); err != nil {
+	if err := mailTo("contact@steaminviter.com", "Contact - " + name, "<h3>" + name + " - " + email + ":</h3><p>" + message + "</p>"); err != nil {
 		w.Write([]byte("ERR"))
 		log.Fatal(err)
 	} else {
