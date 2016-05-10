@@ -16,18 +16,36 @@ jQuery(document).ready(function(){
 			return false;
 		}
 
+		$("#contactForm input").each(function(){
+			this.disabled = true;
+		});
+		$("#contactForm textarea").each(function(){
+			this.disabled = true;
+		});
+
 		$.post("/sendMessage", {
 			name: name,
 			email: email,
 			message: message
 		}, function(result){
-			alert(result);
 			if (result == "OK") {
 				alert("Message sent successfully!");
 			} else {
+				$("#contactForm input").each(function(){
+					this.disabled = false;
+				});
+				$("#contactForm textarea").each(function(){
+					this.disabled = false;
+				});
 				alert("An error occured when trying to send your message.");
 			}
 		}).fail(function(){
+			$("#contactForm input").each(function(){
+				this.disabled = false;
+			});
+			$("#contactForm textarea").each(function(){
+				this.disabled = false;
+			});
 			alert("An error occured when trying to send your message.")
 		});
 	});

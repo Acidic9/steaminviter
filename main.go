@@ -1,28 +1,30 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"html/template"
-	"github.com/solovev/steam_go"
-	"net/url"
-	"errors"
-	"io/ioutil"
-	"encoding/json"
-	"strconv"
-	"github.com/gorilla/sessions"
-	"gopkg.in/gomail.v2"
 	"crypto/tls"
 	"database/sql"
+	"encoding/json"
+	"errors"
 	"github.com/go-sql-driver/mysql"
-	"time"
-	"strings"
+	"github.com/gorilla/sessions"
+	"github.com/solovev/steam_go"
+	"gopkg.in/gomail.v2"
+	"html/template"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
+	"reflect"
 	"regexp"
+	"strconv"
+	"strings"
+	"time"
 )
 
-const apikey	string	= "2B2A0C37AC20B5DC2234E579A2ABB11C"
-var store		= sessions.NewCookieStore([]byte("secured-cookies"))
-var query 	string
+const apikey		string	= "2B2A0C37AC20B5DC2234E579A2ABB11C"
+var store			= sessions.NewCookieStore([]byte("secured-cookies"))
+var steamWallpaper	string	= getSteamBackground()
+var query 		string
 
 type steamUser struct {
 	steamid				int64
@@ -39,6 +41,8 @@ type steamUser struct {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	cssHandler := http.FileServer(http.Dir("./css/"))
 	jsHandler := http.FileServer(http.Dir("./js/"))
 	imagesHandler := http.FileServer(http.Dir("./images/"))
@@ -47,11 +51,12 @@ func main() {
 	http.Handle("/js/", http.StripPrefix("/js/", jsHandler))
 	http.Handle("/images/", http.StripPrefix("/images/", imagesHandler))
 
-	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/", httpHandler("index.gohtml", map[string]interface{}{}))
+	http.HandleFunc("/features", httpHandler("features.gohtml", map[string]interface{}{}))
+	http.HandleFunc("/purchase", httpHandler("purchase.gohtml", map[string]interface{}{}))
+	http.HandleFunc("/contact", httpHandler("contact.gohtml", map[string]interface{}{"js": []string{"/js/contact.js"}}))
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
-	http.HandleFunc("/purchase", purchaseHandler)
-	http.HandleFunc("/contact", contactHandler)
 	http.HandleFunc("/sendMessage", sendMessageHandler)
 
 	log.Println("Listening to :8080")
@@ -60,22 +65,37 @@ func main() {
 	_ = mysql.Config{}
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
+// Main Functions
+func httpHandler(path string, variables map[string]interface{}) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		defaultHandler(w, r, path, variables)
+	}
+}
+
+func defaultHandler(w http.ResponseWriter, r *http.Request, path string, variables map[string]interface{}) {
 	// Check if url is a profile
 	if match, _ := regexp.MatchString(`^\d+$`, r.URL.Path[1:]); len(r.URL.Path[1:]) == 17 && match {
 		profileHandler(w, r)
 		return
 	}
-	
+
+	// Define urlPath from path variable
+	urlPath := "/" + strings.Split(path, ".")[0]
+
+	// Check if path is index
+	if urlPath == "/index" {
+		urlPath = "/"
+	}
+
 	// Check if url is different than wanted
-	if r.URL.Path != "/" {
+	if r.URL.Path != urlPath {
 		errorHandler(w, r, http.StatusNotFound)
 		return
 	}
 
 	// Define template variables
-	parse			:= make(map[string]interface{})
-	parse["steamid"]	= 0
+	parse			:=	make(map[string]interface{})
+	parse["steamid"]	=	0
 
 	// Collect session variables
 	session, err := store.Get(r, "user")
@@ -96,6 +116,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if t, err := template.ParseFiles("header.gohtml"); err == nil {
 		parse["urlPath"]	= r.URL.Path
 		parse["css"]		= []string{"/css/index.css"}
+		parse["steamWallpaper"]	= steamWallpaper
 		if err := t.Execute(w, parse); err != nil {
 			log.Println(err)
 		}
@@ -106,7 +127,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse index.gohtml
-	if t, err := template.ParseFiles("index.gohtml"); err == nil {
+	if t, err := template.ParseFiles(path); err == nil {
+		// Append parameter 'variables' (map) to variable 'parse' (map)
+		dv, sv := reflect.ValueOf(parse), reflect.ValueOf(variables)
+		for _, k := range sv.MapKeys() {
+			dv.SetMapIndex(k, sv.MapIndex(k))
+		}
+
 		if err := t.Execute(w, parse); err != nil {
 			log.Println(err)
 		}
@@ -128,69 +155,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func contactHandler(w http.ResponseWriter, r *http.Request) {
-	// Check if url is different than wanted
-	if r.URL.Path != "/contact" {
-		errorHandler(w, r, http.StatusNotFound)
-		return
-	}
-
-	// Define template variables
-	parse			:= make(map[string]interface{})
-	parse["steamid"]	= 0
-
-	// Collect session variables
-	session, err := store.Get(r, "user")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-
-	// Parse user variables to template
-	if !session.IsNew {
-		parse["steamid"]	= session.Values["steamid"].(int64)
-		parse["personaname"]	= session.Values["personaname"].(string)
-		parse["avatarmedium"]	= session.Values["avatarmedium"].(string)
-	}
-
-	// Parse header.gohtml
-	if t, err := template.ParseFiles("header.gohtml"); err == nil {
-		parse["urlPath"]	= r.URL.Path
-		parse["css"]		= []string{"/css/index.css"}
-		if err := t.Execute(w, parse); err != nil {
-			log.Println(err)
-		}
-	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-
-	// Parse contact.gohtml
-	if t, err := template.ParseFiles("contact.gohtml"); err == nil {
-		if err := t.Execute(w, parse); err != nil {
-			log.Println(err)
-		}
-	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-
-	// Parse footer.gohtml
-	if t, err := template.ParseFiles("footer.gohtml"); err == nil {
-		parse["js"] = []string{"/js/contact.js"}
-		if err := t.Execute(w, parse); err != nil {
-			log.Println(err)
-		}
-	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
-	}
-}
-
+// Page Handlers
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if url is different than wanted
 	if r.URL.Path != "/login" {
@@ -355,41 +320,6 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 301)
 }
 
-func purchaseHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/purchase" {
-		errorHandler(w, r, http.StatusNotFound)
-		return
-	}
-
-	plan := r.URL.Query().Get("plan")
-
-	p := make(map[string]string)
-	if t, err := template.ParseFiles("purchase.gohtml"); err == nil {
-		session, err := store.Get(r, "user")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Println(err)
-			return
-		}
-
-		if session.IsNew {
-			http.Redirect(w, r, "/", 301)
-			return
-		}
-
-		if plan != "toddler" && plan != "man" && plan != "god" {
-			w.Write([]byte("Invalid Plan"))
-			return
-		}
-
-		p["plan"] = plan
-
-		t.Execute(w, p)
-	} else {
-		log.Print(err)
-	}
-}
-
 func profileHandler(w http.ResponseWriter, r *http.Request) {
 	// Connect to database
 	db, err := sql.Open("mysql", "steaminviter:AriisAwesome9@tcp(45.32.189.171:3306)/steaminviter")
@@ -432,13 +362,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	db.Close()
 }
 
-func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
-	w.WriteHeader(status)
-	if status == http.StatusNotFound {
-		w.Write([]byte("Error 404 - Page not found."))
-	}
-}
-
+// General Functions
 func getUserDetails(steamid int64) (*steamUser, error) {
 	resp, err := http.Get("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?" + url.Values{
 		"key":		[]string{apikey},
@@ -503,8 +427,6 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.SetPrefix("HEY!!!")
-
 	r.ParseForm()
 
 	name	:= r.FormValue("name")
@@ -513,20 +435,50 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := mailTo("contact@steaminviter.com", "Contact - " + name, "<h3>" + name + " - " + email + ":</h3><p>" + message + "</p>"); err != nil {
 		w.Write([]byte("ERR"))
-		log.Fatal(err)
+		log.Println(err)
 	} else {
 		w.Write([]byte("OK"))
 	}
 }
 
+func getSteamBackground() string {
+	resp, err := http.Get("http://steamcommunity.com/")
+	if err != nil {
+		log.Println(err)
+		return "http://cdn.akamai.steamstatic.com/steam/apps/201810/page_bg_generated_v6b.jpg?t=1447361219"
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return "http://cdn.akamai.steamstatic.com/steam/apps/201810/page_bg_generated_v6b.jpg?t=1447361219"
+	}
+
+	reg := regexp.MustCompile(`<div class="apphub_background" style="background-image: url\('(.+)'\);">`)
+	if matches := reg.FindSubmatch(body); len(matches) > 1 {
+		return string(matches[1])
+	} else {
+		log.Println("ojkewf")
+		return "http://cdn.akamai.steamstatic.com/steam/apps/201810/page_bg_generated_v6b.jpg?t=1447361219"
+	}
+}
+
+// Other Common Functions
+func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
+	w.WriteHeader(status)
+	if status == http.StatusNotFound {
+		w.Write([]byte("Error 404 - Page not found."))
+	}
+}
+
 func mailTo(to, subject, message string) error {
 	m := gomail.NewMessage()
-	m.SetAddressHeader("From", "ariseyhun@live.com.au", "Steam Inviter Contact")
+	m.SetAddressHeader("From", "ariseyhun9@gmail.com", "Steam Inviter Contact")
 	m.SetAddressHeader("To", to, "Contact")
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", message)
 
-	d := gomail.NewPlainDialer("smtp-pulse.com", 2525, "ariseyhun@live.com.au", "a4Kg2XQ6Xp")
+	d := gomail.NewPlainDialer("smtp-pulse.com", 2525, "ariseyhun9@gmail.com", "aF5p6BCbgLm6Cfa")
 
 	d.SSL = false
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}

@@ -16,11 +16,11 @@
 	ga('send', 'pageview');
 </script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 <script type="text/javascript">
 	jQuery(document).ready(function(){
 		// JavaScript Starts Here //
-		/*var containerHeight = $("#container").height()
+		var containerHeight = $("#container").height()
 		adjustFooter();
 		$(window).resize(function () {
 			adjustFooter();
@@ -31,11 +31,11 @@
 			$(".header-container").each(function(){
 				headerAndFooterHeight += $(this).height();
 			});
-			var adjustHeight = docHeight - (headerAndFooterHeight + 24)
+			var adjustHeight = docHeight - (headerAndFooterHeight + 24 + 40)
 			if (adjustHeight > containerHeight) {
 				$("#background").height(adjustHeight + "px")
 			}
-		}*/
+		}
 	});
 </script>
 {{range .js}}
