@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
 	"github.com/solovev/steam_go"
 	"gopkg.in/gomail.v2"
@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"fmt"
 )
 
 const apikey		string			= "2B2A0C37AC20B5DC2234E579A2ABB11C"
@@ -57,11 +58,10 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
 	http.HandleFunc("/sendMessage", sendMessageHandler)
+	http.HandleFunc("/ipn", ipnHandler)
 
 	log.Println("Listening to :8080")
 	http.ListenAndServe(":8080", nil)
-
-	_ = mysql.Config{}
 }
 
 // Main Functions
@@ -360,6 +360,98 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	rows.Close()
 	db.Close()
+}
+
+func ipnHandler(w http.ResponseWriter, r *http.Request) {
+	// Payment has been received and IPN is verified.  This is where you
+	// update your database to activate or process the order, or setup
+	// the database with the user's order details, email an administrator,
+	// etc. You can access a slew of information via the IPN data from r.Form
+
+	// Check the paypal documentation for specifics on what information
+	// is available in the IPN POST variables.  Basically, all the POST vars
+	// which paypal sends, which we send back for validation.
+
+	// For this tutorial, we'll just print out all the IPN data.
+
+	fmt.Println("IPN received from PayPal")
+
+	err := r.ParseForm() // need this to get PayPal's HTTP POST of IPN data
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if r.Method == "POST" {
+
+		var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
+
+		for k, v := range r.Form {
+			fmt.Println("key :", k)
+			fmt.Println("value :", strings.Join(v, ""))
+
+			// NOTE : Store the IPN data k,v into a slice. It will be useful for database entry later.
+
+			postStr = postStr + k + "=" + url.QueryEscape(strings.Join(v, "")) + "&"
+		}
+
+		// To verify the message from PayPal, we must send
+		// back the contents in the exact order they were received and precede it with
+		// the command _notify-validate
+
+		// PayPal will then send one single-word message, either VERIFIED,
+		// if the message is valid, or INVALID if the messages is not valid.
+
+		// See more at
+		// https://developer.paypal.com/webapps/developer/docs/classic/ipn/integration-guide/IPNIntro/
+
+		// post data back to PayPal
+		client := &http.Client{}
+		req, err := http.NewRequest("POST", postStr, nil)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		req.Header.Add("Content-Type: ", "application/x-www-form-urlencoded")
+
+		// fmt.Println(req)
+
+		resp, err := client.Do(req)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println("Response : ")
+		fmt.Println(resp)
+		fmt.Println("Status :")
+		fmt.Println(resp.Status)
+
+
+		// convert response to string
+		respStr, _ := ioutil.ReadAll(resp.Body)
+
+		//fmt.Println("Response String : ", string(respStr))
+
+		verified, err := regexp.MatchString("VERIFIED", string(respStr))
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		if verified {
+			fmt.Println("IPN verified")
+			fmt.Println("TODO : Email receipt, increase credit, etc")
+		} else {
+			fmt.Println("IPN validation failed!")
+			fmt.Println("Do not send the stuff out yet!")
+		}
+
+	}
 }
 
 // General Functions
