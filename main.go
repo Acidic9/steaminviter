@@ -21,10 +21,9 @@ import (
 	"time"
 )
 
-const apikey		string	= "2B2A0C37AC20B5DC2234E579A2ABB11C"
-var store			= sessions.NewCookieStore([]byte("secured-cookies"))
-var steamWallpaper	string	= getSteamBackground()
-var query 		string
+const apikey		string			= "2B2A0C37AC20B5DC2234E579A2ABB11C"
+var store		*sessions.CookieStore	= sessions.NewCookieStore([]byte("secured-cookies"))
+var steamWallpaper	string			= getSteamBackground()
 
 type steamUser struct {
 	steamid				int64
@@ -213,6 +212,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Define query
+		var query string
 		if !rows.Next() {
 			// ID doesn't exist
 			query = `
