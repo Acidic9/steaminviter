@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 	"fmt"
+	"os"
 )
 
 const apikey		string			= "2B2A0C37AC20B5DC2234E579A2ABB11C"
@@ -381,18 +382,29 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
-		//var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
-		fmt.Println(r.Form["payer_id"])
-		fmt.Println(r.Form["custom"])
+		var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
 
-		/*for k, v := range r.Form {
-			fmt.Println("key :", k)
-			fmt.Println("value :", strings.Join(v, ""))
+		paymentInfo := make(map[string][]string)
 
+		file, err := os.OpenFile("ipn", os.O_RDWR|os.O_CREATE, 0660)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		var writeString string
+
+		for k, v := range r.Form {
+			//fmt.Println("key :", k)
+			//fmt.Println("value :", strings.Join(v, ""))
+			writeString += k + ": " + v + "\n"
 			// NOTE : Store the IPN data k,v into a slice. It will be useful for database entry later.
 
+			paymentInfo[k] = v
 			postStr = postStr + k + "=" + url.QueryEscape(strings.Join(v, "")) + "&"
 		}
+
+		file.Write([]byte(writeString))
 
 		// To verify the message from PayPal, we must send
 		// back the contents in the exact order they were received and precede it with
@@ -415,20 +427,12 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 		req.Header.Add("Content-Type: ", "application/x-www-form-urlencoded")
 
-		// fmt.Println(req)
-
 		resp, err := client.Do(req)
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-
-		fmt.Println("Response : ")
-		fmt.Println(resp)
-		fmt.Println("Status :")
-		fmt.Println(resp.Status)
-
 
 		// convert response to string
 		respStr, _ := ioutil.ReadAll(resp.Body)
@@ -448,7 +452,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Println("IPN validation failed!")
 			fmt.Println("Do not send the stuff out yet!")
-		}*/
+		}
 
 	}
 }
