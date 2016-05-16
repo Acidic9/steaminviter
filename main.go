@@ -383,6 +383,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		//var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
 		fmt.Println(r.Form["payer_id"])
+		fmt.Println(r.Form["custom"])
 
 		/*for k, v := range r.Form {
 			fmt.Println("key :", k)
