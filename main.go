@@ -374,8 +374,6 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 	// For this tutorial, we'll just print out all the IPN data.
 
-	fmt.Println("IPN received from PayPal")
-
 	err := r.ParseForm() // need this to get PayPal's HTTP POST of IPN data
 	if err != nil {
 		fmt.Println(err)
@@ -383,10 +381,10 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "POST" {
+		//var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
+		fmt.Println(r.Form["payer_id"])
 
-		var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
-
-		for k, v := range r.Form {
+		/*for k, v := range r.Form {
 			fmt.Println("key :", k)
 			fmt.Println("value :", strings.Join(v, ""))
 
@@ -449,7 +447,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Println("IPN validation failed!")
 			fmt.Println("Do not send the stuff out yet!")
-		}
+		}*/
 
 	}
 }
