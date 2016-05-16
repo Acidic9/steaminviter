@@ -397,7 +397,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		for k, v := range r.Form {
 			//fmt.Println("key :", k)
 			//fmt.Println("value :", strings.Join(v, ""))
-			writeString += k + ": " + v + "\n"
+			writeString += k + []string{": "} + v + []string{"\n"}
 			// NOTE : Store the IPN data k,v into a slice. It will be useful for database entry later.
 
 			paymentInfo[k] = v
