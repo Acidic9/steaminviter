@@ -364,6 +364,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ipnHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(""))
 	// Payment has been received and IPN is verified.  This is where you
 	// update your database to activate or process the order, or setup
 	// the database with the user's order details, email an administrator,
@@ -449,14 +450,14 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		if verified {
 			db, err := sql.Open("mysql", "steaminviter:AriisAwesome9@tcp(45.32.189.171:3306)/steaminviter")
 			if err != nil {
-				w.WriteHeader(http.StatusOK)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
 			defer db.Close()
 
 			if err = db.Ping(); err != nil {
-				w.WriteHeader(http.StatusOK)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
@@ -495,7 +496,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 			rows, err := db.Query(query)
 			if err != nil {
-				w.WriteHeader(http.StatusOK)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
@@ -509,7 +510,8 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Do not send the stuff out yet!")
 		}
 	}
-	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(""))
+	return
 }
 
 // General Functions
