@@ -508,8 +508,8 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("IPN validation failed!")
 			fmt.Println("Do not send the stuff out yet!")
 		}
-
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 // General Functions
