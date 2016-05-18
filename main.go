@@ -384,7 +384,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
 
-		IPN := make(map[string][]string)
+		IPN := make(map[string]string)
 
 		file, err := os.OpenFile("ipn", os.O_RDWR|os.O_CREATE, 0660)
 		if err != nil {
@@ -397,10 +397,10 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		for k, v := range r.Form {
 			//fmt.Println("key :", k)
 			//fmt.Println("value :", strings.Join(v, ""))
-
+			//writeString += k + ": " + strings.Join(v, "") + "\n"
 			// NOTE : Store the IPN data k,v into a slice. It will be useful for database entry later.
 
-			IPN[k] = v
+			IPN[k] = strings.Join(v, "")
 			postStr = postStr + k + "=" + url.QueryEscape(strings.Join(v, "")) + "&"
 		}
 
@@ -447,24 +447,72 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if verified {
-			//item_name := isset(IPN["item_name"])
-			isset(IPN["item_name"])
-			isset(IPN["wejwe"])
+			db, err := sql.Open("mysql", "steaminviter:AriisAwesome9@tcp(45.32.189.171:3306)/steaminviter")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Println(err)
+				return
+			}
+			defer db.Close()
 
-			fmt.Println("IPN verified")
-			fmt.Println("TODO : Email receipt, increase credit, etc")
+			if err = db.Ping(); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Println(err)
+				return
+			}
+
+			query := `INSERT INTO
+				transactions (
+					item_name,
+					payer_email,
+					first_name,
+					last_name,
+					amount,
+					currency,
+					country,
+					txn_id,
+					txn_type,
+					payer_id,
+					payment_status,
+					payment_type,
+					unix_time
+				)
+			VALUES (
+				'` + IPN["item_name"] + `',
+				'` + IPN["payer_email"] + `',
+				'` + IPN["first_name"] + `',
+				'` + IPN["last_name"] + `',
+				'` + IPN["amount"] + `',
+				'` + IPN["currency"] + `',
+				'` + IPN["country"] + `',
+				'` + IPN["txn_id"] + `',
+				'` + IPN["txn_type"] + `',
+				'` + IPN["payer_id"] + `',
+				'` + IPN["payment_status"] + `',
+				'` + IPN["payment_type"] + `',
+				'` + strconv.FormatInt(makeTimestamp(), 10) + `'
+			)`
+
+			rows, err := db.Query(query)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Println(err)
+				return
+			}
+			rows.Close()
+
+			log.Println("Transaction Complete!")
+			log.Println("Item:", IPN["item_name"])
+			log.Println("Time:", makeTimestamp())
 		} else {
 			fmt.Println("IPN validation failed!")
 			fmt.Println("Do not send the stuff out yet!")
 		}
+
 	}
 }
 
 // General Functions
-func isset(value []string) {
-	fmt.Printf("%T, %v", value)
-}
-
 func getUserDetails(steamid int64) (*steamUser, error) {
 	resp, err := http.Get("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?" + url.Values{
 		"key":		[]string{apikey},
