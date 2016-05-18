@@ -20,12 +20,14 @@ import (
 	"strings"
 	"time"
 	"fmt"
-	"os"
 )
 
 const apikey		string			= "2B2A0C37AC20B5DC2234E579A2ABB11C"
-var store		*sessions.CookieStore	= sessions.NewCookieStore([]byte("secured-cookies"))
-var steamWallpaper	string			= getSteamBackground()
+var (
+	store		*sessions.CookieStore	= sessions.NewCookieStore([]byte("secured-cookies"))
+	steamWallpaper	string			= getSteamBackground()
+	ipn_ids		[]string
+)
 
 type steamUser struct {
 	steamid				int64
@@ -387,14 +389,6 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 		IPN := make(map[string]string)
 
-		file, err := os.OpenFile("ipn", os.O_RDWR|os.O_CREATE, 0660)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		var writeString string
-
 		for k, v := range r.Form {
 			//fmt.Println("key :", k)
 			//fmt.Println("value :", strings.Join(v, ""))
@@ -405,7 +399,14 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 			postStr = postStr + k + "=" + url.QueryEscape(strings.Join(v, "")) + "&"
 		}
 
-		file.Write([]byte(writeString))
+		for i := 0; i < len(ipn_ids); i++ {
+			if ipn_ids[i] == IPN["ipn_track_id"] {
+				log.Println("Duplicate IPN ID")
+				return
+			}
+		}
+
+		ipn_ids = append(ipn_ids, IPN["ipn_track_id"])
 
 		// To verify the message from PayPal, we must send
 		// back the contents in the exact order they were received and precede it with
@@ -422,7 +423,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		req, err := http.NewRequest("POST", postStr, nil)
 
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return
 		}
 
@@ -431,7 +432,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		resp, err := client.Do(req)
 
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return
 		}
 
@@ -443,21 +444,19 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		verified, err := regexp.MatchString("VERIFIED", string(respStr))
 
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return
 		}
 
 		if verified {
 			db, err := sql.Open("mysql", "steaminviter:AriisAwesome9@tcp(45.32.189.171:3306)/steaminviter")
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
 			defer db.Close()
 
 			if err = db.Ping(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
@@ -496,7 +495,6 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 			rows, err := db.Query(query)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Println(err)
 				return
 			}
@@ -504,14 +502,12 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 			log.Println("Transaction Complete!")
 			log.Println("Item:", IPN["item_name"])
-			log.Println("Time:", makeTimestamp())
+			log.Println("Price:", IPN["amount"], " ", IPN["currency"])
 		} else {
 			fmt.Println("IPN validation failed!")
 			fmt.Println("Do not send the stuff out yet!")
 		}
 	}
-	w.Write([]byte(""))
-	return
 }
 
 // General Functions
