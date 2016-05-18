@@ -449,14 +449,14 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		if verified {
 			db, err := sql.Open("mysql", "steaminviter:AriisAwesome9@tcp(45.32.189.171:3306)/steaminviter")
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				w.WriteHeader(http.StatusOK)
 				log.Println(err)
 				return
 			}
 			defer db.Close()
 
 			if err = db.Ping(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				w.WriteHeader(http.StatusOK)
 				log.Println(err)
 				return
 			}
@@ -495,7 +495,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 			rows, err := db.Query(query)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				w.WriteHeader(http.StatusOK)
 				log.Println(err)
 				return
 			}
