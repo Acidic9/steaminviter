@@ -384,7 +384,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
 
-		paymentInfo := make(map[string][]string)
+		IPN := make(map[string][]string)
 
 		file, err := os.OpenFile("ipn", os.O_RDWR|os.O_CREATE, 0660)
 		if err != nil {
@@ -397,10 +397,10 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		for k, v := range r.Form {
 			//fmt.Println("key :", k)
 			//fmt.Println("value :", strings.Join(v, ""))
-			writeString += strings.Join(k,",") + ": " + strings.Join(v,",") + "\n"
+
 			// NOTE : Store the IPN data k,v into a slice. It will be useful for database entry later.
 
-			paymentInfo[k] = v
+			IPN[k] = v
 			postStr = postStr + k + "=" + url.QueryEscape(strings.Join(v, "")) + "&"
 		}
 
@@ -447,17 +447,24 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if verified {
+			//item_name := isset(IPN["item_name"])
+			isset(IPN["item_name"])
+			isset(IPN["wejwe"])
+
 			fmt.Println("IPN verified")
 			fmt.Println("TODO : Email receipt, increase credit, etc")
 		} else {
 			fmt.Println("IPN validation failed!")
 			fmt.Println("Do not send the stuff out yet!")
 		}
-
 	}
 }
 
 // General Functions
+func isset(value []string) {
+	fmt.Printf("%T, %v", value)
+}
+
 func getUserDetails(steamid int64) (*steamUser, error) {
 	resp, err := http.Get("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?" + url.Values{
 		"key":		[]string{apikey},
