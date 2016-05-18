@@ -19,7 +19,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"fmt"
 )
 
 const apikey		string			= "2B2A0C37AC20B5DC2234E579A2ABB11C"
@@ -380,12 +379,12 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm() // need this to get PayPal's HTTP POST of IPN data
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	if r.Method == "POST" {
-		var postStr string = "https://www.sandbox.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
+		var postStr string = "https://www.paypal.com/cgi-bin/webscr" + "&cmd=_notify-validate&"
 
 		IPN := make(map[string]string)
 
@@ -504,8 +503,7 @@ func ipnHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("Item:", IPN["item_name"])
 			log.Println("Price:", IPN["amount"], " ", IPN["currency"])
 		} else {
-			fmt.Println("IPN validation failed!")
-			fmt.Println("Do not send the stuff out yet!")
+			log.Println("IPN validation failed!")
 		}
 	}
 }
